@@ -1,5 +1,6 @@
 import { Form, LabeledTextField, Card, InputWithSubmitButton } from "@everybody-gives/ui"
 import { useState } from "react"
+import { supabase } from "../supabase"
 export const NewGroupForm = () => {
   const [groupName, setGroupName] = useState("")
   const [yourName, setYourName] = useState("")
@@ -9,7 +10,32 @@ export const NewGroupForm = () => {
       submitError={null} 
       formTitle="New Group" 
       submitText="CREATE" 
-      onSubmit={() => { /* TODO: create a new group and members in Supabase */ }
+      onSubmit={async () => {
+        const {data, error: groupError} = await supabase
+          .from("groups")
+          .insert({
+            name: groupName,
+            created_by: yourName,
+          })
+          .select("id")
+          .single()
+        if (groupError) {
+          console.error(groupError)
+          return
+        }
+        if (!data) {
+          console.error("No data returned")
+          return
+        }
+        const { error: membersError} = await supabase
+          .from("members")
+          .insert(members.map((name) => ({ name, selected_by: null, group_id: data.id })))
+        if (membersError) {
+          console.error(membersError)
+          return
+        }
+        window.location.href = `/${data.id}?user=${yourName}`
+      }
     }>
       <LabeledTextField
         name="name"
