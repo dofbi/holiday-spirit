@@ -1,4 +1,51 @@
-# Astro Starter Kit: Minimal
+# Holiday Spirit
+
+## About the project
+
+read [Getting into the holiday spirit with Astro, React, and Supabase](https://www.aleksandra.codes/astro-supabase)
+
+## Supabase project initialization
+
+Paste the following SQL query in the Supabase editor and run it
+
+```sql
+create extension if not exists "uuid-ossp";
+
+create table
+  groups (
+    id uuid primary key default uuid_generate_v4 (),
+    name text not null,
+    created_by text,
+    created_at timestamp with time zone default now()
+  );
+
+create table
+  members (
+    id uuid primary key default uuid_generate_v4 (),
+    group_id uuid references groups (id),
+    name text not null,
+    selected_by text,
+    unique (group_id, name)
+  );
+
+CREATE FUNCTION draw_name11(groupid uuid, username text)
+RETURNS text LANGUAGE plpgsql AS $$
+  BEGIN
+    UPDATE members
+    SET selected_by = username
+    WHERE name = (SELECT name
+                 FROM members
+                 WHERE group_id = groupid
+                   AND selected_by IS NULL
+                 ORDER BY RANDOM()
+                 LIMIT 1);
+    RETURN (SELECT name
+            FROM members
+            WHERE group_id = groupid
+              AND selected_by = username);
+  END;
+$$;
+```
 
 ```
 npm create astro@latest -- --template minimal
