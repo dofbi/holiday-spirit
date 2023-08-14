@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useReward } from "react-rewards"
 import { Button, Card } from "@everybody-gives/ui"
 import { supabase } from "../supabase"
 type GroupInfoProps = {
@@ -8,7 +9,15 @@ type GroupInfoProps = {
 }
 export const GroupInfo = ({group, members, userName}: GroupInfoProps) => {
   const [result, setResult] = useState<string | undefined>(undefined)
-  const [isAnimating, setisAnimating] = useState(true)
+  // const [isAnimating, setisAnimating] = useState(true)
+  const { reward, isAnimating } = useReward("rewardId", "confetti", {
+   elementCount: 200,
+   lifetime: 500,
+   elementSize: 10,
+   startVelocity: 20,
+   angle: 70,
+   spread: 150,
+  });
   
   const drawPerson = async () => {
     const {data} = await supabase.rpc("draw_name11", {groupid: group.id, username: userName}).single()
@@ -17,13 +26,14 @@ export const GroupInfo = ({group, members, userName}: GroupInfoProps) => {
       return
     }
     setResult(data)
+    reward()
   }
   return (
     <div>
       <h1 className="mt-1 text-5xl font-black tracking-tight text-gray-700">
         Welcome to {group.name}, {userName}!
       </h1>
-      <div className="flex justify-start my-6 items-center">
+      <div className="flex justify-start my-6 items-center" id={"rewardId"}>
         <Button width={215} onClick={() => {
           void drawPerson()
         }}>DRAW A NAME</Button>
